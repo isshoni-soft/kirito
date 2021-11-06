@@ -42,14 +42,20 @@ func Queue(fun func()) {
 }
 
 func QueueBlocking(fun func()) {
-	hasRun := make(chan bool)
+	Get(func() interface {} {
+		fun()
+		return nil // not like return type matters
+	})
+}
+
+func Get(fun func() interface {}) interface{} {
+	hasRun := make(chan interface {})
 
 	functionQueue <- func() {
-		fun()
-		hasRun <- true
+		hasRun <- fun()
 	}
 
-	<- hasRun
+	return <- hasRun
 }
 
 func Running() bool {
