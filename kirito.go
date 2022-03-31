@@ -28,9 +28,9 @@ func Run(run func()) {
 
 	for {
 		select {
-		case fun := <- functionQueue:
+		case fun := <-functionQueue:
 			fun()
-		case <- hasRun:
+		case <-hasRun:
 			return
 		default:
 		}
@@ -42,20 +42,24 @@ func Queue(fun func()) {
 }
 
 func QueueBlocking(fun func()) {
-	Get(func() interface {} {
+	Get(func() any {
 		fun()
 		return nil // not like return type matters
 	})
 }
 
-func Get(fun func() interface {}) interface{} {
-	hasRun := make(chan interface {})
+func Get[R any](fun func() R) R {
+	return <-GetAsync(fun)
+}
+
+func GetAsync[R any](fun func() R) chan R {
+	hasRun := make(chan R)
 
 	functionQueue <- func() {
 		hasRun <- fun()
 	}
 
-	return <- hasRun
+	return hasRun
 }
 
 func Running() bool {
