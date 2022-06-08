@@ -14,16 +14,20 @@ func init() {
 	runtime.LockOSThread()
 }
 
-func Run(run func()) {
+func Init(run func(), shutdownSignal chan bool) {
 	mu.Lock()
 	running = true
 	mu.Unlock()
 
-	hasRun := make(chan bool, 2)
+	hasRun := make(chan bool)
 
 	go func() {
 		run()
 		hasRun <- true
+
+		if shutdownSignal != nil {
+			<-shutdownSignal
+		}
 	}()
 
 	for {
@@ -53,7 +57,7 @@ func Get[R any](fun func() R) R {
 }
 
 func GetAsync[R any](fun func() R) chan R {
-	hasRun := make(chan R, 2)
+	hasRun := make(chan R)
 
 	functionQueue <- func() {
 		hasRun <- fun()
