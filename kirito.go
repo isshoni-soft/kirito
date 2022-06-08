@@ -23,11 +23,12 @@ func Init(run func(), shutdownSignal chan bool) {
 
 	go func() {
 		run()
-		hasRun <- true
 
 		if shutdownSignal != nil {
 			<-shutdownSignal
 		}
+
+		hasRun <- true
 	}()
 
 	for {
