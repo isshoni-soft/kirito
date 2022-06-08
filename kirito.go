@@ -19,7 +19,7 @@ func Run(run func()) {
 	running = true
 	mu.Unlock()
 
-	hasRun := make(chan bool)
+	hasRun := make(chan bool, 2)
 
 	go func() {
 		run()
@@ -53,7 +53,7 @@ func Get[R any](fun func() R) R {
 }
 
 func GetAsync[R any](fun func() R) chan R {
-	hasRun := make(chan R)
+	hasRun := make(chan R, 2)
 
 	functionQueue <- func() {
 		hasRun <- fun()
